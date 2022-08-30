@@ -21,5 +21,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/crests', [CrestController::class, 'index']);
-Route::get('/family/{name}', [FamilyController::class, 'showByName']);
+Route::get('/name/{name}', [FamilyController::class, 'showByName']);
 Route::get('/family', [FamilyController::class, 'index']);

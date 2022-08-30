@@ -54,7 +54,7 @@ class Family extends Model
 	
 	public function images()
 	{
-		return $this->hasMany(CrestController::class);
+		return $this->hasMany(Crest::class, 'name_id', 'name_id');
 	}
 
 }

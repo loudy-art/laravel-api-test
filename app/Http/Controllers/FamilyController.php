@@ -31,14 +31,33 @@ class FamilyController extends Controller
      */
 
     public function showByName(Request $request)
-    {
+    {   
         $name = $request->route('name');
-       $names = Family::where('name', 'LIKE', '%'.$name.'%')->paginate(15);
-        return response()->json([
-            'status' => true,
-            'names' => $names
-        ]
-        );
+        $include = $request->include;
+        $items_per_page=$request->items_per_page;
+        
+
+        if(empty($include))
+        {
+            $names = Family::where('name', 'LIKE', '%'.$name.'%')->with('images')->paginate($items_per_page);
+            return response()->json([
+                'status' => true,
+                'names' => $names
+            ]
+            );
+        }
+        else
+        {   
+            $includes= explode(',',$include);
+            $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('images')->paginate($page_max);
+            return response()->json([
+                'status' => true,
+                'names' => $names
+            ]
+            );
+
+        }
+        
     }
 
 
