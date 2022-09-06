@@ -7,7 +7,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Controllers\FamilyController;
 
 /**
  * Class Crest
@@ -42,8 +41,4 @@ class Crest extends Model
 		'clan',
 		'condicion'
 	];
-
-    public function user()
-    {
-        return $this->belongsTo(Family::class);
-    }}
+}

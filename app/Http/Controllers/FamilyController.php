@@ -39,7 +39,7 @@ class FamilyController extends Controller
 
         if(empty($include))
         {
-            $names = Family::where('name', 'LIKE', '%'.$name.'%')->with('images')->paginate($items_per_page);
+            $names = Family::select('name_id', 'name', 'clan')->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
             return response()->json([
                 'status' => true,
                 'names' => $names
@@ -48,13 +48,78 @@ class FamilyController extends Controller
         }
         else
         {   
-            $includes= explode(',',$include);
-            $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('images')->paginate($page_max);
-            return response()->json([
+
+            /*$results = Product::orderBy('id','desc')->with(['menus','categories' => function ($query){
+    $query->where('slug', request()->sub_category);
+}])->paginate(24);*/
+           // $includes= explode(',',$include);
+          //  $includes = explode(",", $include); 
+            $history = "history";
+            $crests = "crests";
+            $products = "products";
+            $historyandcrests = "history,crests";
+            $crestsandproducts = "crests,products";
+            $historyandproducts ="history,products";
+
+         //   $includes= explode(',',$include);
+           /* echo var_dump($include);
+            die();
+            foreach ($includes as $queryData) {*/
+
+                switch(true)
+                {
+                    case strpos($history, $include) >= 0:
+                        $names = Family::select('name_id', 'name', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')->paginate($items_per_page);
+                    
+                    case strpos($crests, $include) >= 0:
+                        $names = Family::select('name_id', 'name', 'clan')->where('name', 'LIKE', '%'.$name.'%')->with('crests')->paginate($items_per_page);
+
+                    case strpos($history, $queryData) >= 0:
+                        
+                    case strpos($history, $queryData) >= 0:
+
+                    case strpos($history, $queryData) >= 0:
+
+                    case strpos($history, $queryData) >= 0:
+
+
+                }
+
+            /*    if (strpos($history, $queryData) !== FALSE) { 
+                    $names = Family::select('name_id', 'name', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')->paginate($items_per_page);
+                }
+                else if (strpos($crests, $queryData) !== FALSE) { 
+                    $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
+                    /*foreach //que recorra el query anterior y gatheree los name id
+                    {
+                        
+
+                    }
+                    
+                    
+                }
+                else if (strpos($products, $queryData) !== FALSE) { 
+                    echo "Match products found"; 
+                }
+            }*/
+
+
+           return response()->json([
                 'status' => true,
                 'names' => $names
             ]
             );
+
+           // echo var_dump($includes);
+           //die();
+
+           /* $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
+          // $names =Family::select($includes->with(['crests' => function($q) use ($campaign_id){$q->where('campaign_id', $campaign_id);
+            return response()->json([
+                'status' => true,
+                'names' => $names
+            ]
+            );*/
 
         }
         

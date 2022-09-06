@@ -52,9 +52,15 @@ class Family extends Model
 		'condicion'
 	];
 	
-	public function images()
+	public function crests()
 	{
 		return $this->hasMany(Crest::class, 'name_id', 'name_id');
 	}
+
+	public function images()
+	{
+		return $this->hasMany(Image::class, 'name_id', 'name_id');
+	}
+
 
 }
