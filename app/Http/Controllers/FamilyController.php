@@ -30,100 +30,229 @@ class FamilyController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+    public function sameElements($a, $b)
+    {
+    sort($a);
+    sort($b);
+    return $a == $b;
+    }
+
+    function in_array_all($needles, $haystack) {
+        return empty(array_diff($needles, $haystack));
+     }
+
     public function showByName(Request $request)
     {   
         $name = $request->route('name');
-        $include = $request->include;
+        $include = strtolower($request->include);
+        $arrayInclude = explode(",", $include);
+        //$includes = array_map('strtolower', $arrayInclude);
         $items_per_page=$request->items_per_page;
-        
+        $history = ["history"];
+        $crests = ["crests"];
+        $products = ["products"];
+        $historyandcrests = ["history", "crests"];
+        $crestsandproducts = ["crests", "products"];
+        $historyandproducts = ["history", "products"];
+        $all = ["history", "crests", "products"];
+        $lowercaseallowed = array_map('strtolower', $all);
 
         if(empty($include))
         {
-            $names = Family::select('name_id', 'name', 'clan')->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
+            $names = Family::select('name_id', 'name', 'country', 'clan')->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
             return response()->json([
                 'status' => true,
                 'names' => $names
             ]
             );
         }
-        else
+
+        else if($this->in_array_all($arrayInclude, $lowercaseallowed ) == true && count($arrayInclude)<=3) 
         {   
-
-            /*$results = Product::orderBy('id','desc')->with(['menus','categories' => function ($query){
-    $query->where('slug', request()->sub_category);
-}])->paginate(24);*/
-           // $includes= explode(',',$include);
-          //  $includes = explode(",", $include); 
-            $history = "history";
-            $crests = "crests";
-            $products = "products";
-            $historyandcrests = "history,crests";
-            $crestsandproducts = "crests,products";
-            $historyandproducts ="history,products";
-
-         //   $includes= explode(',',$include);
-           /* echo var_dump($include);
-            die();
-            foreach ($includes as $queryData) {*/
-
                 switch(true)
                 {
-                    case strpos($history, $include) >= 0:
-                        $names = Family::select('name_id', 'name', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')->paginate($items_per_page);
+                    case $this->sameElements($arrayInclude, $history)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
+
+                    case $this->sameElements($arrayInclude, $crests)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan')->where('name', 'LIKE', '%'.$name.'%')
+                    ->with('crests:crest_id,crest_url,caption,clan,name_id')->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
+
+                    case $this->sameElements($arrayInclude, $products)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan')->where('name', 'LIKE', '%'.$name.'%')
+                        ->with('images:img_id,image_url,image_info,type,name_id')->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
+
+                    case $this->sameElements($arrayInclude, $historyandcrests)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')
+                        ->with('crests:crest_id,crest_url,caption,clan,name_id')->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
+
+                    case $this->sameElements($arrayInclude, $crestsandproducts)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')
+                        ->with('crests:crest_id,crest_url,caption,clan,name_id', 'images:img_id,image_url,image_info,type,name_id' )->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
                     
-                    case strpos($crests, $include) >= 0:
-                        $names = Family::select('name_id', 'name', 'clan')->where('name', 'LIKE', '%'.$name.'%')->with('crests')->paginate($items_per_page);
+                    case $this->sameElements($arrayInclude, $historyandproducts)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')
+                        ->with('images:img_id,image_url,image_info,type,name_id')->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;
 
-                    case strpos($history, $queryData) >= 0:
-                        
-                    case strpos($history, $queryData) >= 0:
-
-                    case strpos($history, $queryData) >= 0:
-
-                    case strpos($history, $queryData) >= 0:
-
-
+                    case $this->sameElements($arrayInclude, $all)==1:
+                        $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')
+                        ->with('crests:crest_id,crest_url,caption,clan,name_id', 'images:img_id,image_url,image_info,type,name_id' )->paginate($items_per_page);
+                        return response()->json([
+                            'status' => true,
+                            'names' => $names
+                        ]
+                        );
+                    break;       
                 }
-
-            /*    if (strpos($history, $queryData) !== FALSE) { 
-                    $names = Family::select('name_id', 'name', 'clan', 'info')->where('name', 'LIKE', '%'.$name.'%')->paginate($items_per_page);
-                }
-                else if (strpos($crests, $queryData) !== FALSE) { 
-                    $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
-                    /*foreach //que recorra el query anterior y gatheree los name id
-                    {
-                        
-
-                    }
-                    
-                    
-                }
-                else if (strpos($products, $queryData) !== FALSE) { 
-                    echo "Match products found"; 
-                }
-            }*/
+        }
+        else 
+        {
+            echo "Pusiste cualquier cosa";
+        }
+    }
 
 
-           return response()->json([
-                'status' => true,
-                'names' => $names
-            ]
-            );
+    public function showById(Request $request)
+    {   
+        $id = $request->route('id');
+        $include = strtolower($request->include);
+        $arrayInclude = explode(",", $include);
+        $items_per_page=$request->items_per_page;
+        $history = ["history"];
+        $crests = ["crests"];
+        $products = ["products"];
+        $historyandcrests = ["history", "crests"];
+        $crestsandproducts = ["crests", "products"];
+        $historyandproducts = ["history", "products"];
+        $all = ["history", "crests", "products"];
+        $lowercaseallowed = array_map('strtolower', $all);
 
-           // echo var_dump($includes);
-           //die();
-
-           /* $names = Family::select($includes)->where('name', 'LIKE', '%'.$name.'%')->with('crests', 'images')->paginate($items_per_page);
-          // $names =Family::select($includes->with(['crests' => function($q) use ($campaign_id){$q->where('campaign_id', $campaign_id);
+        if(empty($include))
+        {
+            $names = Family::select('name', 'clan', 'country')->where('name_id', $id)->with('crests', 'images')->paginate($items_per_page);
             return response()->json([
                 'status' => true,
                 'names' => $names
             ]
-            );*/
-
+            );
         }
+
+        else if($this->in_array_all($arrayInclude, $lowercaseallowed ) == true && count($arrayInclude)<=3) 
+        {   
+            switch(true)
+            {
+                case $this->sameElements($arrayInclude, $history)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name_id', $id)->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+            
+                case $this->sameElements($arrayInclude, $crests)==1:
+                $names = Family::select('name_id', 'name', 'country', 'clan')->where('name_id', $id)
+                ->with('crests:crest_id,crest_url,caption,clan,name_id')->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+            
+                case $this->sameElements($arrayInclude, $products)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan')->where('name_id', $id)
+                    ->with('images:img_id,image_url,image_info,type,name_id')->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+            
+                case $this->sameElements($arrayInclude, $historyandcrests)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name_id', $id)
+                    ->with('crests:crest_id,crest_url,caption,clan,name_id')->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+            
+                case $this->sameElements($arrayInclude, $crestsandproducts)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name_id', $id)
+                    ->with('crests:crest_id,crest_url,caption,clan,name_id', 'images:img_id,image_url,image_info,type,name_id' )->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+                
+                case $this->sameElements($arrayInclude, $historyandproducts)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name_id', $id)
+                    ->with('images:img_id,image_url,image_info,type,name_id')->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;
+            
+                case $this->sameElements($arrayInclude, $all)==1:
+                    $names = Family::select('name_id', 'name', 'country', 'clan', 'info')->where('name_id', $id)
+                    ->with('crests:crest_id,crest_url,caption,clan,name_id', 'images:img_id,image_url,image_info,type,name_id' )->paginate($items_per_page);
+                    return response()->json([
+                        'status' => true,
+                        'names' => $names
+                    ]
+                    );
+                break;       
+            }
+            }
+            else 
+            {
+            echo "Pusiste cualquier cosa";
+            }
         
-    }
+        }
 
 
     /**
